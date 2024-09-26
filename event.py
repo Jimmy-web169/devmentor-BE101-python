@@ -2,6 +2,13 @@ from abc import ABC, abstractmethod
 from notification import Notification, Email, SMS, Telegram
 from user import User
 
+EventMap = {"Register":{"zh-TW":"註冊成功","en_us":"Registration Successful"},
+    "CourseBookingEvent":{"zh-TW":"學生預約課程成功","en_us":"Course Booking Successful"},
+    "CourseCancelEvent":{"zh-TW":"學生取消課程","en_us":"Course Cancellation"}}
+
+
+
+
 # Event Interface
 class Event(ABC):
     @abstractmethod
@@ -19,10 +26,12 @@ class Event(ABC):
         pass
 
 class BaseEvent(Event):
-    def __init__(self, user: User, content: dict, default_channels: list):
+    #Type hints
+    user : str
+    channels : list[Notification]
+    def __init__(self, user: User, channels: list[Notification]):
         self.user = user
-        self.content = content
-        self.channels = default_channels
+        self.channels = channels
 
     def add_channel(self, notification: Notification):
         self.channels.append(notification)
@@ -35,14 +44,17 @@ class BaseEvent(Event):
 # RegisterEvent
 class RegisterEvent(BaseEvent):
     def __init__(self, user: User):
-        super().__init__(user, {"zh-TW": "註冊成功", "en-US": "Registration Successful"}, [Email(), SMS()])
+        super().__init__(user, channels = [Email(), SMS()])
+        self.content = EventMap['Register']
 
 # CourseBookingEvent
 class CourseBookingEvent(BaseEvent):
     def __init__(self, user: User):
-        super().__init__(user, {"zh-TW": "學生預約課程成功", "en-US": "Course Booking Successful"}, [Email(), Telegram()])
+        super().__init__(user,channels = [Email(), Telegram()])
+        self.content = EventMap['CourseBookingEvent']
 
 # CourseCancelEvent
 class CourseCancelEvent(BaseEvent):
     def __init__(self, user: User):
-        super().__init__(user, {"zh-TW": "學生取消課程", "en-US": "Course Cancellation"}, [Email(), Telegram()])
+        super().__init__(user, channels = [Email(), Telegram()])
+        self.content = EventMap['CourseCancelEvent']
