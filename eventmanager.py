@@ -1,5 +1,5 @@
 # UserEventManager manage user's event
-from user import User
+from user import User,Student
 from eventhandler import EventHandler
 
 
@@ -7,20 +7,20 @@ class UserEventManager:
     def __init__(self, user: User):
         self.user = user
 
+    def handle_event(self, event_method):
+        event = event_method()
+        event_handler = EventHandler(event, self.user)
+        handled_event = event_handler.handle_event()
+        handled_event.notify()
+    
+
     def user_register(self):
-        event = self.user.register()
-        event_handler = EventHandler(event,self.user)
-        register_event = event_handler.handle_event()
-        register_event.notify()
+        self.handle_event(self.user.register)
+        self.user = Student(self.user.id, self.user.email, self.user.phone, self.user.prefers_language)
+
 
     def book_course(self):
-        event = self.user.course_booking()
-        event_handler = EventHandler(event,self.user)
-        book_course_event = event_handler.handle_event()
-        book_course_event.notify()
+        self.handle_event(self.user.course_booking)
 
     def cancel_course(self):
-        event = self.user.course_cancel()
-        event_handler = EventHandler(event,self.user)
-        cancel_course_event = event_handler.handle_event()
-        cancel_course_event.notify()
+        self.handle_event(self.user.course_cancel)
