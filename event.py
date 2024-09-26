@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from notification import Notification,Email,SMS,Telegram
+from notification import Notification, Email, SMS, Telegram
 from user import User
+
 # Event Interface
 class Event(ABC):
     @abstractmethod
@@ -11,56 +12,37 @@ class Event(ABC):
         pass
 
     @abstractmethod
-    def notify(self, user: User):
+    def notify(self):
         """
         Every event should have a notify method
         """
         pass
 
+class BaseEvent(Event):
+    def __init__(self, user: User, content: dict, default_channels: list):
+        self.user = user
+        self.content = content
+        self.channels = default_channels
+
+    def add_channel(self, notification: Notification):
+        self.channels.append(notification)
+
+    def notify(self):
+        message = self.content.get(self.user.prefers_language, "Notification")
+        for channel in self.channels:
+            channel.send_message(message, self.user)
 
 # RegisterEvent
-class RegisterEvent(Event):
-    def __init__(self,user:User):
-        self.user = user
-        self.content = {"zh-TW": "註冊成功", "en-US": "Registration Successful"}
-        self.channels = [Email(), SMS()]
-
-    def add_channel(self, notification: Notification):
-        self.channels.append(notification)
-
-    def notify(self):
-        message = self.content.get(self.user.prefers_language, "Registration Successful")
-        for channel in self.channels:
-            channel.send_message(message, self.user)
-
+class RegisterEvent(BaseEvent):
+    def __init__(self, user: User):
+        super().__init__(user, {"zh-TW": "註冊成功", "en-US": "Registration Successful"}, [Email(), SMS()])
 
 # CourseBookingEvent
-class CourseBookingEvent(Event):
-    def __init__(self,user:User):
-        self.user = user
-        self.content = {"zh-TW": "學生預約課程成功", "en-US": "Course Booking Successful"}
-        self.channels = [Email(), Telegram()]
-
-    def add_channel(self, notification: Notification):
-        self.channels.append(notification)
-
-    def notify(self):
-        message = self.content.get(self.user.prefers_language, "Course Booking Successful")
-        for channel in self.channels:
-            channel.send_message(message, self.user)
-
+class CourseBookingEvent(BaseEvent):
+    def __init__(self, user: User):
+        super().__init__(user, {"zh-TW": "學生預約課程成功", "en-US": "Course Booking Successful"}, [Email(), Telegram()])
 
 # CourseCancelEvent
-class CourseCancelEvent(Event):
-    def __init__(self,user:User):
-        self.user = user
-        self.content = {"zh-TW": "學生取消課程", "en-US": "Course Cancellation"}
-        self.channels = [Email(), Telegram()]
-
-    def add_channel(self, notification: Notification):
-        self.channels.append(notification)
-
-    def notify(self):
-        message = self.content.get(self.user.prefers_language, "Course Cancellation")
-        for channel in self.channels:
-            channel.send_message(message, self.user)
+class CourseCancelEvent(BaseEvent):
+    def __init__(self, user: User):
+        super().__init__(user, {"zh-TW": "學生取消課程", "en-US": "Course Cancellation"}, [Email(), Telegram()])
