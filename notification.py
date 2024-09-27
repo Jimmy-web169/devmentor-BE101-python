@@ -13,12 +13,17 @@ class Notification(ABC):
 class Email(Notification):
     def send_message(self, message: str, user: User):
         print(f"Sending Email to {user.email}: {message}")
+
 # SMS Notification
 class SMS(Notification):
     def send_message(self, message: str, user: User):
         print(f"Sending SMS to {user.phone}: {message}")
-
-# Telegram Notification
+        
 class Telegram(Notification):
     def send_message(self, message: str, user: User):
         print(f"Sending Telegram message to {user.id}: {message}")
+      
+class Line(Notification):
+    def send_message(self, message: str, user: User):
+        print(f"Sending Line message to {user.id}: {message}")
+   
